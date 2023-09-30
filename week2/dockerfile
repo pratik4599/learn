@@ -1,0 +1,85 @@
+FROM ubuntu:20.04
+
+ENV TZ=Asia/Kolkata \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y wget apt-transport-https unzip python3 python3-pip git
+
+
+# Install required dependencies for Google Chrome
+RUN apt-get install -y \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libcairo2 \
+    libcups2 \
+    libcurl4 \
+    libdbus-1-3 \
+    libdrm2 \
+    libexpat1 \
+    libgbm1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libu2f-udev \
+    libvulkan1 \
+    libx11-6 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils
+
+COPY chrome_114_amd64.deb /tmp/
+COPY chromedriver_linux64.zip /tmp/
+RUN dpkg -i /tmp/chrome_114_amd64.deb && apt-get install -f
+RUN unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+
+EXPOSE 5000
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+CMD ["python3", "app.py"]
+
+
+# Build the image ->  docker build -t iname .
+
+# Run a container from the image -> docker run -it --rm iname
+
+# docker exec -it 2b02f59389c6 bash
+
+# .List all images -> docker images
+# .List all running containers -> docker ps
+# .List all containers (including stopped) ->  docker ps -a
+
+# .Stop a running container ->  docker stop <container_id>
+
+
+# .Tag an image with a version or label -> docker tag flask_kotak:1 myusername/flask_kotak:1.0
+# .Push an image to a Docker registry (like Docker Hub) -> docker push myusername/flask_kotak:1.0
+# .Pull an image from a Docker registry -> docker pull myusername/flask_kotak:1.0
+
+#  remove an image -> docker rmi <image_id>
+#  remove all docker images -> docker rmi $(docker images -q)
+#  remove a container -> docker rm <container_id>
+#  remove stopped containers forcefully  docker container prune -f
+
+
+
+
